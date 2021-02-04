@@ -76,11 +76,10 @@ const { MongoClient, ObjectId } = require('mongodb');
   });
 
   // Remoção (Delete)
-  app.delete('/mensagens/:id', (req, res) => {
-    const id = +req.params.id;
+  app.delete('/mensagens/:id', async (req, res) => {
+    const id = req.params.id;
 
-    const index = mensagens.findIndex(msg => msg.id === id);
-    delete mensagens[index];
+    await mensagens.deleteOne({ _id: ObjectId(id) });
 
     res.send('Mensagem removida com sucesso.');
   });
