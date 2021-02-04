@@ -64,9 +64,7 @@ const { MongoClient, ObjectId } = require('mongodb');
     await mensagens.updateOne(
       { _id: ObjectId(id) },
       { 
-        $set: {
-          ...mensagem
-        }
+        $set: mensagem
       }
     );
 
