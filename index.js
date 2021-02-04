@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { MongoClient } = require('mongodb');
+const { MongoClient, ObjectId } = require('mongodb');
 
 (async () => {
     const url = 'mongodb://localhost:27017';
@@ -49,24 +49,18 @@ const { MongoClient } = require('mongodb');
   });
 
   // Ler Individual (Read Single)
-  app.get('/mensagens/:id', (req, res) => {
-    const id = +req.params.id;
+  app.get('/mensagens/:id', async (req, res) => {
+    const id = req.params.id;
 
-    const mensagem = mensagens.find(msg => msg.id === id);
+    const mensagem = await mensagens.findOne({ _id: ObjectId(id) });
     
     res.send(mensagem);
   });
 
   // Atualizar (Update)
-  app.put('/mensagens/:id', (req, res) => {
-    const id = +req.params.id;
 
     const mensagem = req.body;
 
-    mensagem.id = id;
-
-    const index = mensagens.findIndex(msg => msg.id === id);
-    mensagens[index] = mensagem;
 
     res.send('Mensagem editada com sucesso.');
   });
