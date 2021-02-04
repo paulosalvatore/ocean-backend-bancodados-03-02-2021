@@ -58,9 +58,15 @@ const { MongoClient, ObjectId } = require('mongodb');
   });
 
   // Atualizar (Update)
+  app.put('/mensagens/:id', async (req, res) => {
+    const id = req.params.id;
 
     const mensagem = req.body;
 
+    await mensagens.updateOne(
+      { _id: ObjectId(id) },
+      { ...mensagem }
+    );
 
     res.send('Mensagem editada com sucesso.');
   });
