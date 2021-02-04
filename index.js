@@ -1,80 +1,88 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const app = express();
+const { MongoClient } = require('mongodb');
 
-app.use(bodyParser.json());
+(async () => {
+    const url = 'mongodb://localhost:27017';
 
-const port = 3000;
+    const dbName = 'ocean_database_03_02_2021';
 
-/*
-Create, Read (All/Single), Update & Delete
-Criar, Ler (Tudo ou Individual), Atualizar e Remover
-*/
+    console.info('Conectando ao banco de dados...');
 
-const mensagens = [
-  {
-    "id": 1,
-    "texto": "Primeira mensagem"
-  },
-  {
-    "id": 2,
-    "texto": "Segunda mensagem"
-  }
-];
+    const client = await MongoClient.connect(url, { useUnifiedTopology: true });
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
-});
+    console.info('MongoDB conectado com sucesso!');
 
-// Criar (Create)
-app.post('/mensagens', (req, res) => {
-  const mensagem = req.body;
+    const db = client.db(dbName);
 
-  mensagem.id = mensagens.length + 1;
+    const app = express()
 
-  mensagens.push(mensagem);
+    app.use(bodyParser.json());
 
-  res.send('Mensagem criada com sucesso.');
-});
+    const port = 3000;
 
-// Ler Tudo (Read All)
-app.get('/mensagens', (req, res) => {
-  res.send(mensagens.filter(Boolean));
-});
+  /*
+  Create, Read (All/Single), Update & Delete
+  Criar, Ler (Tudo ou Individual), Atualizar e Remover
+  */
 
-// Ler Individual (Read Single)
-app.get('/mensagens/:id', (req, res) => {
-  const id = +req.params.id;
+  const mensagens = db.collection('mensagens');
 
-  const mensagem = mensagens.find(msg => msg.id === id);
-  
-  res.send(mensagem);
-});
+  app.get('/', (req, res) => {
+    res.send('Hello World!');
+  });
 
-// Atualizar (Update)
-app.put('/mensagens/:id', (req, res) => {
-  const id = +req.params.id;
+  // Criar (Create)
+  app.post('/mensagens', (req, res) => {
+    const mensagem = req.body;
 
-  const mensagem = req.body;
+    mensagem.id = mensagens.length + 1;
 
-  mensagem.id = id;
+    mensagens.push(mensagem);
 
-  const index = mensagens.findIndex(msg => msg.id === id);
-  mensagens[index] = mensagem;
+    res.send('Mensagem criada com sucesso.');
+  });
 
-  res.send('Mensagem editada com sucesso.');
-});
+  // Ler Tudo (Read All)
+  app.get('/mensagens', async (req, res) => {
+    res.send(await mensagens.find().toArray());
+  });
 
-// Remoção (Delete)
-app.delete('/mensagens/:id', (req, res) => {
-  const id = +req.params.id;
+  // Ler Individual (Read Single)
+  app.get('/mensagens/:id', (req, res) => {
+    const id = +req.params.id;
 
-  const index = mensagens.findIndex(msg => msg.id === id);
-  delete mensagens[index];
+    const mensagem = mensagens.find(msg => msg.id === id);
+    
+    res.send(mensagem);
+  });
 
-  res.send('Mensagem removida com sucesso.');
-});
+  // Atualizar (Update)
+  app.put('/mensagens/:id', (req, res) => {
+    const id = +req.params.id;
 
-app.listen(port, () => {
-  console.info('Servidor rodando em http://localhost:' + port);
-});
+    const mensagem = req.body;
+
+    mensagem.id = id;
+
+    const index = mensagens.findIndex(msg => msg.id === id);
+    mensagens[index] = mensagem;
+
+    res.send('Mensagem editada com sucesso.');
+  });
+
+  // Remoção (Delete)
+  app.delete('/mensagens/:id', (req, res) => {
+    const id = +req.params.id;
+
+    const index = mensagens.findIndex(msg => msg.id === id);
+    delete mensagens[index];
+
+    res.send('Mensagem removida com sucesso.');
+  });
+
+  app.listen(port, () => {
+    console.info('Servidor rodando em http://localhost:' + port);
+  });
+
+})();
